@@ -1,0 +1,20 @@
+# Lingkungan Python (dibuat ulang otomatis oleh uv)
+.venv/
+__pycache__/
+*.pyc
+
+# Hasil build app (besar, dibuat ulang dengan pyinstaller)
+build/
+dist/
+*.app/
+*.zip
+*.spec
+
+# Hasil tools/screenshot.py
+screenshots/
+
+# File sistem
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
