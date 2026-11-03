@@ -1,15 +1,20 @@
+"""Test chess clock, skor rally, dan evaluation function."""
+
 import unittest
 from unittest import mock
 
 import rules
-from ai import evaluate, win_utility
-from config import CLOCK_URGENT_SECONDS, LEVELS, SCORE_WIN_BONUS
+from ai import evaluate, mobility, win_utility
+from config import CLOCK_URGENT_SECONDS, LEVELS, MOBILITY_STEPS, SCORE_WIN_BONUS
 from game import scoring
 from game.chess_clock import ChessClock
 from game.scoring import AI_WIN, HUMAN_WIN, TIMEOUT, compute_score
+from tests.helpers import make_state
 
 
 class ChessClockTest(unittest.TestCase):
+    """Chess clock hanya berjalan saat giliran Human."""
+
     def test_only_ticks_while_running(self):
         clock = ChessClock(60)
         clock.tick(5)
@@ -36,6 +41,8 @@ class ChessClockTest(unittest.TestCase):
 
 
 class ScoringTest(unittest.TestCase):
+    """Rumus skor rally: menang selalu lebih tinggi dari kalah."""
+
     def test_win_counts_bonus_time_and_turns(self):
         score = compute_score(HUMAN_WIN, seconds_left=12.7, turns_survived=9)
         self.assertEqual(score["win_bonus"], SCORE_WIN_BONUS)
@@ -65,14 +72,23 @@ class ScoringConfigTest(unittest.TestCase):
 
 
 class EvaluationTest(unittest.TestCase):
+    """Evaluation function: mobility dan rumus mobility_AI - WEIGHT x mobility_Human."""
+
     def test_evaluation_at_start(self):
         state = rules.initial_state()
-        self.assertEqual(rules.mobility(state, rules.HUMAN), 5)
-        self.assertEqual(evaluate(state, rules.AI, weight=2), 5 - 2 * 5)
+        self.assertEqual(mobility(state, rules.HUMAN, steps=1), rules.mobility(state, rules.HUMAN))
+        self.assertEqual(mobility(state, rules.HUMAN, steps=1), 5)
+        self.assertEqual(mobility(state, rules.HUMAN, steps=2), 14)   # 3 baris x 5 kolom, tanpa posisi sendiri
+        self.assertEqual(evaluate(state, rules.AI, weight=2), 14 - 2 * 14)
+
+    def test_walls_block_mobility(self):
+        state = make_state(human=(3, 3), ai=(6, 6), walls=[(2, 2), (2, 3), (2, 4), (3, 2), (3, 4), (4, 2), (4, 3), (4, 4)])
+        self.assertEqual(mobility(state, rules.HUMAN, steps=2), 0)
 
     def test_win_utility_dominates_heuristic(self):
         max_weight = max(level["weight"] for level in LEVELS)
-        best_heuristic = 8 + max_weight * 8
+        most_tiles = (2 * MOBILITY_STEPS + 1) ** 2 - 1
+        best_heuristic = most_tiles + max_weight * most_tiles
         deepest = max(level["depth"] for level in LEVELS)
         self.assertGreater(win_utility(deepest), best_heuristic)
 
