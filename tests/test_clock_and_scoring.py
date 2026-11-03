@@ -1,8 +1,10 @@
 import unittest
+from unittest import mock
 
 import rules
 from ai import evaluate, win_utility
 from config import CLOCK_URGENT_SECONDS, LEVELS, SCORE_WIN_BONUS
+from game import scoring
 from game.chess_clock import ChessClock
 from game.scoring import AI_WIN, HUMAN_WIN, TIMEOUT, compute_score
 
@@ -49,6 +51,17 @@ class ScoringTest(unittest.TestCase):
         weakest_win = compute_score(HUMAN_WIN, seconds_left=0, turns_survived=1)
         longest_loss = compute_score(AI_WIN, seconds_left=0, turns_survived=len(rules.ALL_TILES))
         self.assertGreater(weakest_win["total"], longest_loss["total"])
+
+
+class ScoringConfigTest(unittest.TestCase):
+    """Rumus skor ikut angka di config, bukan angka tetap."""
+
+    def test_other_config_values(self):
+        with mock.patch.multiple(scoring, SCORE_WIN_BONUS=500, SCORE_PER_SECOND_LEFT=5, SCORE_PER_TURN=10):
+            win = scoring.compute_score(scoring.HUMAN_WIN, 12.5, 4)
+            timeout = scoring.compute_score(scoring.TIMEOUT, 12.5, 4)
+        self.assertEqual(win, {"win_bonus": 500, "time_bonus": 62, "turn_bonus": 40, "total": 602})
+        self.assertEqual(timeout["total"], 40)
 
 
 class EvaluationTest(unittest.TestCase):

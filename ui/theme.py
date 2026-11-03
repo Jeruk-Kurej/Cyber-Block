@@ -77,6 +77,7 @@ FONT_SIZES = {"tiny": 13, "small": 15, "body": 18, "title": 22, "banner": 24}
 PIXEL_TEXT_SCALE = {"logo": 4, "clock": 9, "result": 7, "title_logo": 10}
 
 
-@cache
-def font(role: str) -> pygame.font.Font:
+@cache  # font cukup dibuat sekali per role
+def font(role):
+    """Font sistem untuk role: tiny, small, body, title, banner."""
     return pygame.font.SysFont(FONT_NAMES, FONT_SIZES[role], bold=role in ("title", "banner"))
