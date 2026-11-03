@@ -3,7 +3,7 @@
 import pygame
 
 import rules
-from config import BOARD_SIZE, DEBUG_TOP_CANDIDATES, WIN_UTILITY
+from config import BOARD_SIZE, DEBUG_TOP_CANDIDATES, MOBILITY_STEPS, WIN_UTILITY
 from ui import theme
 from ui.text import draw_text
 
@@ -23,7 +23,10 @@ def format_count(value):
 
 
 class DebugOverlay:
+    """Panel debug mode: cara AI berpikir di giliran terakhirnya."""
+
     def __init__(self, board_renderer):
+        """Pakai BoardRenderer untuk tahu posisi tile di layar."""
         self.board = board_renderer
         panel = pygame.Rect(theme.PANEL_RECT)
         self.rect = pygame.Rect(panel.x, panel.y + theme.DEBUG_PANEL_TOP, panel.width, panel.height - theme.DEBUG_PANEL_TOP)
@@ -53,7 +56,7 @@ class DebugOverlay:
             f"node    {format_count(result["nodes"])} dikunjungi",
             f"prune   {format_count(result["cutoffs"])} cutoff · {format_count(result["pruned"])} cabang",
             f"waktu   {result['elapsed']:.3f} dtk · {format_count(int(rate))} node/dtk",
-            f"eval    langkah_AI - {level['weight']:g} x langkah_kamu",
+            f"eval    ruang_AI - {level['weight']:g} x ruang_kamu ({MOBILITY_STEPS} langkah)",
         )
         for line in lines:
             draw_text(surface, line, "tiny", theme.TEXT, (self.left, y))
@@ -75,6 +78,7 @@ class DebugOverlay:
         """Tanda #N (move) dan xN (place) di papan."""
         moves, places = {}, {}
         for rank, candidate in enumerate(result["candidates"][:DEBUG_TOP_CANDIDATES], start=1):
+            # setdefault: kalau tile sudah punya nomor, pakai nomor yang pertama (kandidat terbaik)
             moves.setdefault(candidate["action"][0], rank)
             places.setdefault(candidate["action"][1], rank)
         for cell, rank in moves.items():
@@ -86,7 +90,7 @@ class DebugOverlay:
         """Label kecil di pojok tile."""
         label = theme.font("tiny").render(text, True, color)
         rect = self.board.cell_rect(cell).inflate(-6, -6)
-        box = label.get_rect(**{corner: getattr(rect, corner)}).inflate(6, 2)
+        box = label.get_rect(**{corner: getattr(rect, corner)}).inflate(6, 2)    # tempel label di pojok tile
         pygame.draw.rect(surface, theme.BACKGROUND, box)
         pygame.draw.rect(surface, color, box, 1)
         surface.blit(label, label.get_rect(center=box.center))
