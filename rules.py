@@ -50,10 +50,12 @@ def distance(a, b):
 
 
 def format_tile(tile):
+    """Tile sebagai teks, misalnya (2,3)."""
     return f"({tile[0]},{tile[1]})"
 
 
 def format_action(action):
+    """Action sebagai teks, misalnya gerak (2,3) place (1,1)."""
     move, place = action
     return f"gerak {format_tile(move)}, place {format_tile(place)}"
 

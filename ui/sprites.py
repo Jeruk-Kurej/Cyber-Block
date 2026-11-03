@@ -95,7 +95,10 @@ AI_TOKEN = (
 
 # --- Surface siap pakai (dibuat setelah display aktif) ---
 class Sprites:
+    """Semua gambar pixel art yang dipakai game, dibuat sekali di awal."""
+
     def __init__(self):
+        """Ubah semua matriks karakter jadi gambar."""
         self.empty = build(EMPTY_TILE)
         self.wall = build(WALL_TILE)
         self.wall_glow = glow(self.wall, theme.WALL, strength=0.35)

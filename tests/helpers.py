@@ -6,6 +6,7 @@ import rules
 
 
 def make_state(human, ai, walls=(), turn=rules.AI):
+    """State buatan untuk test: posisi bidak dan tembok ditentukan sendiri."""
     return {"human": human, "ai": ai, "walls": set(walls), "turn": turn}
 
 

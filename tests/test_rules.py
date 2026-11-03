@@ -1,3 +1,5 @@
+"""Test aturan game: problem formulation di proposal (S0, ACTIONS, RESULT, TERMINAL-TEST)."""
+
 import unittest
 from unittest import mock
 
@@ -8,6 +10,8 @@ TILE_COUNT = len(rules.ALL_TILES)
 
 
 class InitialStateTest(unittest.TestCase):
+    """Initial state (S0)."""
+
     def test_start_positions_and_human_moves_first(self):
         state = rules.initial_state()
         self.assertEqual(state["human"], (0, 3))
@@ -17,6 +21,8 @@ class InitialStateTest(unittest.TestCase):
 
 
 class MoveTest(unittest.TestCase):
+    """Move: 8 arah, tidak boleh ke tembok atau ke lawan."""
+
     def test_center_has_eight_directions(self):
         state = make_state(human=(3, 3), ai=(6, 6), turn=rules.HUMAN)
         expected = {(r, c) for r in (2, 3, 4) for c in (2, 3, 4)} - {(3, 3)}
@@ -45,6 +51,8 @@ class MoveTest(unittest.TestCase):
 
 
 class PlaceTest(unittest.TestCase):
+    """Place: hanya di tile kosong."""
+
     def test_cannot_place_occupied_tiles_or_walls(self):
         state = make_state(human=(0, 3), ai=(6, 3), walls=[(3, 3)], turn=rules.HUMAN)
         places = set(rules.legal_places(state))
@@ -69,6 +77,8 @@ class PlaceTest(unittest.TestCase):
 
 
 class ActionsTest(unittest.TestCase):
+    """ACTIONS(s) dan RESULT(s, a)."""
+
     def test_initial_actions_are_every_move_times_every_empty_tile(self):
         actions = rules.legal_actions(rules.initial_state())
         self.assertEqual(len(actions), 5 * (TILE_COUNT - 2))
@@ -82,6 +92,8 @@ class ActionsTest(unittest.TestCase):
 
 
 class TerminalTest(unittest.TestCase):
+    """TERMINAL-TEST: pemain tanpa move kalah."""
+
     def test_player_without_moves_loses(self):
         state = make_state(human=(0, 0), ai=(1, 1), walls=[(0, 1), (1, 0)], turn=rules.HUMAN)
         self.assertTrue(rules.is_terminal(state))
@@ -94,6 +106,8 @@ class TerminalTest(unittest.TestCase):
 
 
 class BoardTextTest(unittest.TestCase):
+    """Papan sebagai teks (print_board)."""
+
     def test_shows_players_walls_and_empty_tiles(self):
         state = make_state(human=(0, 0), ai=(6, 6), walls=[(0, 1)])
         lines = rules.board_text(state).splitlines()
@@ -106,7 +120,9 @@ class SmallBoardTest(unittest.TestCase):
     """Aturan tetap benar kalau BOARD_SIZE diganti 5."""
 
     def setUp(self):
+        """Ganti papan sementara jadi 5x5 untuk test ini."""
         tiles = [(row, col) for row in range(5) for col in range(5)]
+        # mock.patch: ganti BOARD_SIZE dan ALL_TILES di rules.py sementara, dikembalikan setelah test
         patcher = mock.patch.multiple(rules, BOARD_SIZE=5, ALL_TILES=tiles)
         patcher.start()
         self.addCleanup(patcher.stop)

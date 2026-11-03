@@ -13,7 +13,10 @@ BOARD_PIXELS = BOARD_SIZE * theme.CELL_SIZE + (BOARD_SIZE - 1) * theme.CELL_GAP
 
 
 class BoardRenderer:
+    """Menggambar papan dan semua yang ada di atasnya."""
+
     def __init__(self, sprites):
+        """Siapkan sprite dan lapisan transparan untuk highlight."""
         self.sprites = sprites
         self.rect = pygame.Rect(*theme.BOARD_ORIGIN, BOARD_PIXELS, BOARD_PIXELS)
         self.overlay = pygame.Surface(theme.WINDOW_SIZE, pygame.SRCALPHA)
@@ -124,6 +127,7 @@ class BoardRenderer:
 
     # --- Penanda kecil ---
     def highlight(self, cell, color, strength):
+        """Warnai satu tile (isi transparan dan garis tepi)."""
         rect = self.cell_rect(cell)
         pygame.draw.rect(self.overlay, (*color, int(45 * strength)), rect)
         pygame.draw.rect(self.overlay, (*color, int(255 * strength)), rect, 2)
