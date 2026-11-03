@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 import rules
 from tests.helpers import make_state
@@ -90,6 +91,37 @@ class TerminalTest(unittest.TestCase):
         state = make_state(human=(0, 0), ai=(1, 1), walls=[(0, 1), (1, 0)], turn=rules.AI)
         self.assertFalse(rules.is_terminal(state))
         self.assertIsNone(rules.winner(state))
+
+
+class BoardTextTest(unittest.TestCase):
+    def test_shows_players_walls_and_empty_tiles(self):
+        state = make_state(human=(0, 0), ai=(6, 6), walls=[(0, 1)])
+        lines = rules.board_text(state).splitlines()
+        self.assertEqual(len(lines), 7)
+        self.assertEqual(lines[0], "H # . . . . .")
+        self.assertEqual(lines[6], ". . . . . . A")
+
+
+class SmallBoardTest(unittest.TestCase):
+    """Aturan tetap benar kalau BOARD_SIZE diganti 5."""
+
+    def setUp(self):
+        tiles = [(row, col) for row in range(5) for col in range(5)]
+        patcher = mock.patch.multiple(rules, BOARD_SIZE=5, ALL_TILES=tiles)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_corner_stops_at_new_edge(self):
+        state = make_state(human=(4, 4), ai=(0, 0), turn=rules.HUMAN)
+        self.assertEqual(set(rules.legal_moves(state, rules.HUMAN)), {(3, 3), (3, 4), (4, 3)})
+
+    def test_places_cover_only_small_board(self):
+        state = make_state(human=(0, 0), ai=(4, 4))
+        self.assertEqual(len(rules.legal_places(state)), 25 - 2)
+
+    def test_trapped_in_corner_loses(self):
+        state = make_state(human=(4, 4), ai=(0, 0), walls=[(3, 3), (3, 4), (4, 3)], turn=rules.HUMAN)
+        self.assertEqual(rules.winner(state), rules.AI)
 
 
 if __name__ == "__main__":
