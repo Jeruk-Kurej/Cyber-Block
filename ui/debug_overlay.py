@@ -1,14 +1,15 @@
+"""Debug mode (Tab): statistik search AI, kandidat action teratas, dan penandanya di papan."""
+
 import pygame
 
 import rules
 from config import BOARD_SIZE, DEBUG_TOP_CANDIDATES, WIN_UTILITY
-from game.controller import GameController
 from ui import theme
-from ui.board_renderer import BoardRenderer
 from ui.text import draw_text
 
 
-def format_value(value: float) -> str:
+def format_value(value):
+    """Nilai search untuk ditampilkan (menang/kalah dalam N ply)."""
     if value > WIN_UTILITY / 2:
         return f"MENANG {WIN_UTILITY - value:.0f} ply"
     if value < -WIN_UTILITY / 2:
@@ -16,20 +17,22 @@ def format_value(value: float) -> str:
     return f"{value:+.1f}"
 
 
-def format_count(value: int) -> str:
+def format_count(value):
+    """Angka dengan titik ribuan, misal 12.345."""
     return f"{value:,}".replace(",", ".")
 
 
 class DebugOverlay:
-    def __init__(self, board_renderer: BoardRenderer):
+    def __init__(self, board_renderer):
         self.board = board_renderer
         panel = pygame.Rect(theme.PANEL_RECT)
         self.rect = pygame.Rect(panel.x, panel.y + theme.DEBUG_PANEL_TOP, panel.width, panel.height - theme.DEBUG_PANEL_TOP)
         self.left = self.rect.x + theme.PANEL_PAD
 
     # --- Gambar ---
-    def draw(self, surface: pygame.Surface, game: GameController) -> None:
-        self._draw_coordinates(surface)
+    def draw(self, surface, game):
+        """Panel debug dan penanda kandidat di papan."""
+        self.draw_coordinates(surface)
         pygame.draw.rect(surface, theme.PANEL_BG, self.rect)
         pygame.draw.rect(surface, theme.WALL, self.rect, 2)
         y = self.rect.y + 12
@@ -38,10 +41,11 @@ class DebugOverlay:
         if game.last_search is None:
             draw_text(surface, "Belum ada keputusan AI.", "small", theme.TEXT_DIM, (self.left, y))
             return
-        self._draw_stats(surface, game, game.last_search, y)
-        self._draw_candidate_marks(surface, game.last_search)
+        self.draw_stats(surface, game, game.last_search, y)
+        self.draw_candidate_marks(surface, game.last_search)
 
-    def _draw_stats(self, surface, game: GameController, result, y: int) -> None:
+    def draw_stats(self, surface, game, result, y):
+        """Statistik search dan daftar kandidat teratas."""
         level = game.level
         rate = result["nodes"] / result["elapsed"] if result["elapsed"] else 0
         lines = (
@@ -67,17 +71,19 @@ class DebugOverlay:
             y += 19
         draw_text(surface, "<= : dipangkas alpha-beta (tak lebih baik)", "tiny", theme.TEXT_DIM, (self.left, y + 6))
 
-    def _draw_candidate_marks(self, surface, result) -> None:
+    def draw_candidate_marks(self, surface, result):
+        """Tanda #N (move) dan xN (place) di papan."""
         moves, places = {}, {}
         for rank, candidate in enumerate(result["candidates"][:DEBUG_TOP_CANDIDATES], start=1):
             moves.setdefault(candidate["action"][0], rank)
             places.setdefault(candidate["action"][1], rank)
         for cell, rank in moves.items():
-            self._tag(surface, cell, f"#{rank}", theme.AI, "topleft")
+            self.tag(surface, cell, f"#{rank}", theme.AI, "topleft")
         for cell, rank in places.items():
-            self._tag(surface, cell, f"x{rank}", theme.WALL, "bottomleft")
+            self.tag(surface, cell, f"x{rank}", theme.WALL, "bottomleft")
 
-    def _tag(self, surface, cell, text: str, color, corner: str) -> None:
+    def tag(self, surface, cell, text, color, corner):
+        """Label kecil di pojok tile."""
         label = theme.font("tiny").render(text, True, color)
         rect = self.board.cell_rect(cell).inflate(-6, -6)
         box = label.get_rect(**{corner: getattr(rect, corner)}).inflate(6, 2)
@@ -85,7 +91,8 @@ class DebugOverlay:
         pygame.draw.rect(surface, color, box, 1)
         surface.blit(label, label.get_rect(center=box.center))
 
-    def _draw_coordinates(self, surface) -> None:
+    def draw_coordinates(self, surface):
+        """Nomor baris dan kolom di tepi papan."""
         for i in range(BOARD_SIZE):
             row_rect = self.board.cell_rect((i, 0))
             col_rect = self.board.cell_rect((BOARD_SIZE - 1, i))
