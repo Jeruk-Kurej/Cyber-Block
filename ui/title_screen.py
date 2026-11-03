@@ -6,7 +6,6 @@ from config import LEVELS, HUMAN_CLOCK_SECONDS, SCORE_PER_SECOND_LEFT, SCORE_PER
 import rules
 from ui import theme
 from ui.effects import blit_glowing, lerp_color, pulse
-from ui.sprites import Sprites
 from ui.text import draw_pixel_text, draw_text
 
 RULES = (
@@ -19,27 +18,30 @@ RULES = (
 
 
 class TitleScreen:
-    def __init__(self, sprites: Sprites):
+    def __init__(self, sprites):
         self.sprites = sprites
 
-    def draw(self, surface: pygame.Surface, level: int, t: float) -> None:
+    def draw(self, surface, level, t):
+        """Gambar layar judul. level = indeks level yang dipilih."""
         cx = theme.WINDOW_SIZE[0] // 2
         draw_pixel_text(surface, "CYBER-BLOCK", theme.PIXEL_TEXT_SCALE["title_logo"], theme.WALL, (cx, 110))
         draw_text(surface, "Kurung AI sebelum kamu yang terkurung.", "title", theme.TEXT, (cx, 188), anchor="center")
-        self._draw_versus(surface, cx, 250)
-        self._draw_rules(surface, cx, 312)
-        self._draw_levels(surface, cx, level, 556)
+        self.draw_versus(surface, cx, 250)
+        self.draw_rules(surface, cx, 312)
+        self.draw_levels(surface, cx, level, 556)
         color = lerp_color(theme.HUMAN_DARK, theme.HUMAN_LIGHT, pulse(t))
         draw_text(surface, "TEKAN SPASI UNTUK MULAI", "banner", color, (cx, 690), anchor="center")
 
-    def _draw_versus(self, surface, cx: int, y: int) -> None:
+    def draw_versus(self, surface, cx, y):
+        """Token KAMU vs AI."""
         for player, name, color, side in ((rules.HUMAN, "KAMU", theme.HUMAN, -1), (rules.AI, "AI", theme.AI, 1)):
             center = (cx + side * 150, y)
             blit_glowing(surface, self.sprites.title_token[player], self.sprites.title_token_glow[player], center)
             draw_text(surface, name, "title", color, (center[0] + side * 60, y), anchor="midright" if side < 0 else "midleft")
         draw_text(surface, "VS", "banner", theme.TEXT_DIM, (cx, y), anchor="center")
 
-    def _draw_rules(self, surface, cx: int, y: int) -> None:
+    def draw_rules(self, surface, cx, y):
+        """Kotak aturan singkat."""
         box = pygame.Rect(0, 0, 780, 210)
         box.midtop = (cx, y)
         pygame.draw.rect(surface, theme.PANEL_BG, box)
@@ -50,12 +52,13 @@ class TitleScreen:
             draw_text(surface, text, "body", theme.TEXT, (box.x + 190, line_y))
             line_y += 36
 
-    def _draw_levels(self, surface, cx: int, level: int, y: int) -> None:
+    def draw_levels(self, surface, cx, selected_index, y):
+        """Tiga tombol level, yang dipilih berwarna kuning."""
         width, gap = 210, 24
         start = cx - (len(LEVELS) * width + (len(LEVELS) - 1) * gap) // 2
         for i, level in enumerate(LEVELS):
             box = pygame.Rect(start + i * (width + gap), y, width, 52)
-            selected = i == level
+            selected = i == selected_index
             pygame.draw.rect(surface, theme.PANEL_BG, box)
             pygame.draw.rect(surface, theme.WALL if selected else theme.PANEL_EDGE, box, 3 if selected else 2)
             color = theme.WALL if selected else theme.TEXT_DIM

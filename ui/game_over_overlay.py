@@ -3,7 +3,6 @@
 import pygame
 
 from config import SCORE_PER_SECOND_LEFT, SCORE_PER_TURN
-from game.controller import GameController
 from game.scoring import AI_WIN, HUMAN_WIN, TIMEOUT
 from ui import theme
 from ui.effects import lerp_color, pulse
@@ -21,7 +20,8 @@ class GameOverOverlay:
         self.dim = pygame.Surface(theme.WINDOW_SIZE, pygame.SRCALPHA)
         self.dim.fill(theme.OVERLAY_DIM)
 
-    def draw(self, surface: pygame.Surface, game: GameController, t: float) -> None:
+    def draw(self, surface, game, t):
+        """Hasil akhir, rincian skor, dan ajakan restart."""
         title, color, reason = RESULTS[game.outcome]
         score = game.score
         surface.blit(self.dim, (0, 0))
