@@ -5,14 +5,16 @@ import pygame
 from ui import pixel_font, theme
 
 
-def draw_text(surface: pygame.Surface, text: str, role: str, color, pos, anchor: str = "topleft") -> pygame.Rect:
+def draw_text(surface, text, role, color, pos, anchor="topleft"):
+    """Tulis teks dengan font sistem, posisi mengikuti anchor."""
     rendered = theme.font(role).render(text, True, color)
     rect = rendered.get_rect(**{anchor: pos})
     surface.blit(rendered, rect)
     return rect
 
 
-def draw_pixel_text(surface: pygame.Surface, text: str, scale: int, color, anchor_pos, anchor: str = "center") -> pygame.Rect:
+def draw_pixel_text(surface, text, scale, color, anchor_pos, anchor="center"):
+    """Tulis teks dengan font pixel bercahaya."""
     rendered = pixel_font.render(text, scale, color)
     rect = rendered.get_rect(**{anchor: anchor_pos})
     halo = pixel_font.render_glow(text, scale, color)
