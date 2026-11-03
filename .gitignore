@@ -10,9 +10,6 @@ dist/
 *.zip
 *.spec
 
-# Hasil tools/screenshot.py
-screenshots/
-
 # File sistem
 .DS_Store
 Thumbs.db
