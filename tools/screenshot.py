@@ -23,33 +23,39 @@ FRAME = 1 / 60
 
 
 # --- Bantuan skenario ---
-def hover(app: App, row: int, col: int) -> None:
+def hover(app, row, col):
+    """Taruh mouse di tengah tile."""
     app.mouse_pos = app.board.cell_rect((row, col)).center
 
 
-def advance(app: App, seconds: float) -> None:
+def advance(app, seconds):
+    """Majukan waktu game tanpa menunggu sungguhan."""
     for _ in range(int(seconds / FRAME)):
         app.update(FRAME)
 
 
-def wait_for_human_turn(app: App) -> None:
+def wait_for_human_turn(app):
+    """Tunggu AI selesai berpikir."""
     while app.game.phase == Phase.AI_THINKING:
         app.update(FRAME)
         time.sleep(0.005)
 
 
-def start_game(app: App, state) -> None:
+def start_game(app, state):
+    """Mulai game dari state tertentu."""
     app.game = GameController(LEVELS[app.level], state=state)
 
 
-def capture(app: App, out: Path, name: str) -> None:
+def capture(app, out, name):
+    """Render layar sekarang lalu simpan sebagai PNG."""
     app.render()
     pygame.image.save(app.screen, out / f"{name}.png")
     print(f"saved {name}.png")
 
 
 # --- Skenario ---
-def main(out: Path) -> None:
+def main(out):
+    """Buat semua screenshot ke folder out."""
     out.mkdir(parents=True, exist_ok=True)
     app = App()
     capture(app, out, "01_title")
@@ -103,7 +109,7 @@ def main(out: Path) -> None:
     capture(app, out, "12_timeout")
 
     app.handle(Command(Intent.RESTART))
-    assert app.scene is Scene.TITLE
+    assert app.scene == Scene.TITLE
     pygame.quit()
 
 
