@@ -12,7 +12,7 @@ from ui.text import draw_pixel_text, draw_text
 
 PHASE_TEXT = {
     Phase.HUMAN_MOVE: ("Giliranmu: Gerak", "klik tile biru", theme.HUMAN),
-    Phase.HUMAN_PLACE: ("Giliranmu: Place", "Esc/klik kanan: batal", theme.WALL),
+    Phase.HUMAN_PLACE: ("Giliranmu: Pasang Tembok", "Esc: batal gerak", theme.WALL),
     Phase.AI_THINKING: ("AI sedang berpikir...", "", theme.AI),
     Phase.GAME_OVER: ("Permainan selesai", "tekan R", theme.TEXT),
 }
@@ -33,7 +33,10 @@ HELP_TEXT = {
 
 
 class Hud:
+    """Panel info: banner fase, chess clock, langkah tersisa, dan petunjuk."""
+
     def __init__(self, sprites):
+        """Simpan sprite untuk ikon pemain."""
         self.sprites = sprites
         self.panel = pygame.Rect(theme.PANEL_RECT)
         self.left = self.panel.x + theme.PANEL_PAD
