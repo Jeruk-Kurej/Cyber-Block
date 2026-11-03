@@ -14,21 +14,27 @@ class InstantAI:
     """Pengganti AIPlayer tanpa thread supaya test deterministik."""
 
     def __init__(self):
+        """Belum ada hasil."""
         self._result = None
 
     def start(self, state):
+        """Langsung hitung action (tanpa thread)."""
         self._result = choose_action(state, QUICK)
 
     def poll(self):
+        """Kembalikan hasil sekali, lalu kosongkan."""
         result, self._result = self._result, None
         return result
 
 
 def new_game(state=None):
+    """Game baru dengan AI instan, supaya test cepat."""
     return GameController(QUICK, ai=InstantAI(), state=state)
 
 
 class HumanTurnTest(unittest.TestCase):
+    """Giliran Human: klik, undo, dan pratinjau."""
+
     def test_starts_in_move_phase_with_clock_running(self):
         game = new_game()
         self.assertEqual(game.phase, Phase.HUMAN_MOVE)
@@ -71,6 +77,8 @@ class HumanTurnTest(unittest.TestCase):
 
 
 class AITurnTest(unittest.TestCase):
+    """Giliran AI: jeda minimal lalu AI bergerak."""
+
     def test_ai_waits_minimum_think_time_then_moves(self):
         game = new_game()
         game.click((1, 3))
@@ -88,6 +96,8 @@ class AITurnTest(unittest.TestCase):
 
 
 class GameOverTest(unittest.TestCase):
+    """Akhir game: waktu habis, AI terkurung, Human terkurung."""
+
     def test_clock_running_out_loses(self):
         game = new_game()
         game.update(HUMAN_CLOCK_SECONDS + 1)

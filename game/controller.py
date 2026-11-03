@@ -15,6 +15,7 @@ from game.scoring import AI_WIN, HUMAN_WIN, TIMEOUT, compute_score
 
 
 class Phase:
+    """Fase giliran. Dipakai controller dan UI untuk tahu sedang di tahap mana."""
     HUMAN_MOVE = "human_move"
     HUMAN_PLACE = "human_place"
     AI_THINKING = "ai_thinking"
@@ -22,7 +23,10 @@ class Phase:
 
 
 class GameController:
+    """Mengatur satu game: giliran Human, giliran AI, chess clock, dan hasil akhir."""
+
     def __init__(self, level, ai=None, state=None):
+        """Siapkan game baru dan mulai giliran pertama Human."""
         self.level = level                          # salah satu isi config.LEVELS
         self.ai = ai or AIPlayer(level)
         self.state = state or rules.initial_state()
@@ -43,6 +47,7 @@ class GameController:
     # ---------------------------------------------------------------- dibaca oleh UI
 
     def human_turn(self):
+        """True jika sekarang giliran Human (fase move atau place)."""
         return self.phase in (Phase.HUMAN_MOVE, Phase.HUMAN_PLACE)
 
     def move_origin(self):
@@ -60,6 +65,7 @@ class GameController:
         return []
 
     def mobility(self):
+        """Jumlah langkah kedua pemain sekarang (untuk HUD)."""
         return mobility_of_both(self.state)
 
     def preview(self, tile):
@@ -71,6 +77,7 @@ class GameController:
     # ---------------------------------------------------------------- input dari Human
 
     def click(self, tile):
+        """Human mengklik tile: move dulu, lalu place. Klik yang tidak valid diabaikan."""
         if tile not in self.targets():
             return False
         if self.phase == Phase.HUMAN_MOVE:
@@ -106,6 +113,7 @@ class GameController:
     # ---------------------------------------------------------------- pergantian giliran
 
     def begin_human_turn(self):
+        """Mulai giliran Human, atau akhiri game jika Human sudah terkurung."""
         if rules.is_terminal(self.state):
             self.finish(AI_WIN)
             return
@@ -114,6 +122,7 @@ class GameController:
         self.clock.start()
 
     def end_human_turn(self):
+        """Akhiri giliran Human, lalu AI mulai berpikir (kecuali AI sudah terkurung)."""
         self.clock.stop()
         self.turns_survived += 1
         if rules.is_terminal(self.state):
@@ -124,6 +133,7 @@ class GameController:
         self.ai.start(self.state)
 
     def apply_ai(self, result):
+        """Jalankan action hasil search AI, lalu kembali ke giliran Human."""
         self.last_ai_from = self.state[rules.AI]
         self.state = rules.result(self.state, result["action"])
         self.last_ai_action = result["action"]
@@ -132,6 +142,7 @@ class GameController:
         self.begin_human_turn()
 
     def finish(self, outcome):
+        """Game selesai: hentikan jam dan hitung skor."""
         self.clock.stop()
         self.phase = Phase.GAME_OVER
         self.outcome = outcome
@@ -139,4 +150,5 @@ class GameController:
 
 
 def mobility_of_both(state):
+    """Jumlah langkah Human dan AI dalam satu dictionary."""
     return {rules.HUMAN: rules.mobility(state, rules.HUMAN), rules.AI: rules.mobility(state, rules.AI)}

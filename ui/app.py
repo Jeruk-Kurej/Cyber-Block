@@ -18,12 +18,16 @@ MAX_FRAME_SECONDS = 0.25
 
 
 class Scene:
+    """Layar yang sedang tampil: layar judul atau permainan."""
     TITLE = "title"
     PLAYING = "playing"
 
 
 class App:
+    """Window game: loop utama, input, update, dan gambar."""
+
     def __init__(self):
+        """Buka window dan siapkan semua bagian tampilan."""
         pygame.init()
         self.screen = pygame.display.set_mode(theme.WINDOW_SIZE)
         pygame.display.set_caption(theme.WINDOW_TITLE)
@@ -83,6 +87,7 @@ class App:
             self.scene = Scene.TITLE
 
     def update(self, dt):
+        """Majukan waktu game satu frame."""
         self.time += dt
         if self.scene == Scene.PLAYING:
             self.game.update(dt)
@@ -96,6 +101,7 @@ class App:
         return cell if cell in self.game.targets() else None
 
     def render(self):
+        """Gambar satu frame: latar, layar judul atau papan + HUD, lalu scanline."""
         self.screen.blit(self.background, (0, 0))
         hover = self.hover_cell()
         if self.scene == Scene.TITLE:

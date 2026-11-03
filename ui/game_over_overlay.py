@@ -16,7 +16,10 @@ RESULTS = {
 
 
 class GameOverOverlay:
+    """Lapisan di atas papan saat game selesai."""
+
     def __init__(self):
+        """Siapkan lapisan gelap transparan."""
         self.dim = pygame.Surface(theme.WINDOW_SIZE, pygame.SRCALPHA)
         self.dim.fill(theme.OVERLAY_DIM)
 
