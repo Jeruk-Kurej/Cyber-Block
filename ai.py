@@ -1,3 +1,17 @@
+"""AI Cyber Block: Minimax dengan Alpha-Beta Pruning.
+
+Isi file ini (urutannya sama dengan proposal):
+    1. evaluate()            -> evaluation function: mobility_AI - WEIGHT x mobility_Human
+    2. candidate_actions()   -> place candidate filtering (mengurangi branching factor)
+    3. order_actions()       -> move ordering (supaya pruning terjadi lebih awal)
+    4. choose_action()       -> titik masuk: AI memilih satu action
+    5. max_value(), min_value() -> Minimax dengan Alpha-Beta Pruning, dengan depth limit
+    6. AIPlayer              -> menjalankan search di background supaya window tidak freeze
+
+Pemain yang sedang giliran saat choose_action() dipanggil adalah MAX (di game: AI).
+Lawannya MIN (di game: Human). Semua nilai dihitung dari sudut pandang MAX.
+"""
+
 import time
 from threading import Thread
 
