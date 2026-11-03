@@ -54,16 +54,19 @@ GLYPHS = {
 
 
 # --- Render ---
-def _text_matrix(text: str) -> tuple[str, ...]:
+def text_matrix(text):
+    """Gabungkan glyph tiap huruf jadi satu matriks."""
     glyphs = [GLYPHS[char] for char in text.upper()]
     return tuple(".".join(glyph[row] for glyph in glyphs) for row in range(7))
 
 
-@cache
-def render(text: str, scale: int, color) -> pygame.Surface:
-    return matrix_surface(_text_matrix(text), {"#": color}, scale)
+@cache  # simpan hasil, supaya tidak digambar ulang tiap frame
+def render(text, scale, color):
+    """Teks jadi gambar font pixel."""
+    return matrix_surface(text_matrix(text), {"#": color}, scale)
 
 
 @cache
-def render_glow(text: str, scale: int, color) -> pygame.Surface:
+def render_glow(text, scale, color):
+    """Cahaya neon untuk teks font pixel."""
     return glow(render(text, scale, color), color, radius=max(4, scale * 2))
