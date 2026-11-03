@@ -1,25 +1,25 @@
 """Menerjemahkan event pygame menjadi perintah permainan."""
 
-from dataclasses import dataclass
-from enum import Enum, auto
-
 import pygame
 
 
-class Intent(Enum):
-    CLICK_TILE = auto()
-    UNDO = auto()
-    TOGGLE_DEBUG = auto()
-    RESTART = auto()
-    START = auto()
-    SELECT_LEVEL = auto()
-    QUIT = auto()
+class Intent:
+    """Jenis perintah dari pemain."""
+    CLICK_TILE = "click_tile"
+    UNDO = "undo"
+    TOGGLE_DEBUG = "toggle_debug"
+    RESTART = "restart"
+    START = "start"
+    SELECT_LEVEL = "select_level"
+    QUIT = "quit"
 
 
-@dataclass(frozen=True)
 class Command:
-    intent: Intent
-    value: tuple[int, int] | int | None = None
+    """Satu perintah: intent plus nilai (tile atau nomor level)."""
+
+    def __init__(self, intent, value=None):
+        self.intent = intent
+        self.value = value
 
 
 KEY_INTENTS = {
@@ -32,7 +32,8 @@ KEY_INTENTS = {
 LEVEL_KEYS = {pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2, pygame.K_KP1: 0, pygame.K_KP2: 1, pygame.K_KP3: 2}
 
 
-def translate(event: pygame.event.Event, cell_at) -> Command | None:
+def translate(event, cell_at):
+    """Event pygame jadi Command, atau None kalau tidak dipakai."""
     if event.type == pygame.QUIT:
         return Command(Intent.QUIT)
     if event.type == pygame.MOUSEBUTTONDOWN:

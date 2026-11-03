@@ -1,7 +1,5 @@
 """Window, loop utama, dan perpindahan antara layar siap dan permainan."""
 
-from enum import Enum, auto
-
 import pygame
 
 from config import DEFAULT_LEVEL, LEVELS
@@ -12,16 +10,16 @@ from ui.debug_overlay import DebugOverlay
 from ui.effects import grid_background, scanlines
 from ui.game_over_overlay import GameOverOverlay
 from ui.hud import Hud
-from ui.input_handler import Command, Intent, translate
+from ui.input_handler import Intent, translate
 from ui.sprites import Sprites
 from ui.title_screen import TitleScreen
 
 MAX_FRAME_SECONDS = 0.25
 
 
-class Scene(Enum):
-    TITLE = auto()
-    PLAYING = auto()
+class Scene:
+    TITLE = "title"
+    PLAYING = "playing"
 
 
 class App:
@@ -39,15 +37,16 @@ class App:
         self.scanlines = scanlines(theme.WINDOW_SIZE)
         self.level = DEFAULT_LEVEL
         self.scene = Scene.TITLE
-        self.game: GameController | None = None
+        self.game = None
         self.show_debug = False
         self.running = True
         self.time = 0.0
         self.mouse_pos = (0, 0)
-        self._cursor = None
+        self.cursor = None
 
     # --- Loop ---
-    def run(self) -> None:
+    def run(self):
+        """Loop utama: baca input, update, gambar."""
         clock = pygame.time.Clock()
         while self.running:
             dt = min(clock.tick(theme.FPS) / 1000, MAX_FRAME_SECONDS)
@@ -58,46 +57,48 @@ class App:
                 if command:
                     self.handle(command)
             self.update(dt)
-            self._set_cursor(pygame.SYSTEM_CURSOR_HAND if self.hover_cell() is not None else pygame.SYSTEM_CURSOR_ARROW)
+            self.set_cursor(pygame.SYSTEM_CURSOR_HAND if self.hover_cell() is not None else pygame.SYSTEM_CURSOR_ARROW)
             self.render()
             pygame.display.flip()
         pygame.quit()
 
-    def handle(self, command: Command) -> None:
+    def handle(self, command):
+        """Jalankan satu perintah dari pemain."""
         intent = command.intent
-        if intent is Intent.QUIT:
+        if intent == Intent.QUIT:
             self.running = False
-        elif intent is Intent.TOGGLE_DEBUG:
+        elif intent == Intent.TOGGLE_DEBUG:
             self.show_debug = not self.show_debug
-        elif self.scene is Scene.TITLE:
-            if intent is Intent.SELECT_LEVEL:
+        elif self.scene == Scene.TITLE:
+            if intent == Intent.SELECT_LEVEL:
                 self.level = command.value
-            elif intent is Intent.START:
+            elif intent == Intent.START:
                 self.game = GameController(LEVELS[self.level])
                 self.scene = Scene.PLAYING
-        elif intent is Intent.CLICK_TILE:
+        elif intent == Intent.CLICK_TILE:
             self.game.click(command.value)
-        elif intent is Intent.UNDO:
+        elif intent == Intent.UNDO:
             self.game.undo()
-        elif intent is Intent.RESTART and self.game.phase == Phase.GAME_OVER:
+        elif intent == Intent.RESTART and self.game.phase == Phase.GAME_OVER:
             self.scene = Scene.TITLE
 
-    def update(self, dt: float) -> None:
+    def update(self, dt):
         self.time += dt
-        if self.scene is Scene.PLAYING:
+        if self.scene == Scene.PLAYING:
             self.game.update(dt)
 
     # --- Render ---
     def hover_cell(self):
-        if self.scene is not Scene.PLAYING:
+        """Tile valid yang sedang disorot mouse, atau None."""
+        if self.scene != Scene.PLAYING:
             return None
         cell = self.board.cell_at(self.mouse_pos)
         return cell if cell in self.game.targets() else None
 
-    def render(self) -> None:
+    def render(self):
         self.screen.blit(self.background, (0, 0))
         hover = self.hover_cell()
-        if self.scene is Scene.TITLE:
+        if self.scene == Scene.TITLE:
             self.title.draw(self.screen, self.level, self.time)
         else:
             self.hud.draw(self.screen, self.game, hover, self.time)
@@ -108,7 +109,8 @@ class App:
                 self.game_over.draw(self.screen, self.game, self.time)
         self.screen.blit(self.scanlines, (0, 0))
 
-    def _set_cursor(self, cursor: int) -> None:
-        if cursor != self._cursor:
+    def set_cursor(self, cursor):
+        """Ganti kursor hanya kalau berubah."""
+        if cursor != self.cursor:
             pygame.mouse.set_cursor(cursor)
-            self._cursor = cursor
+            self.cursor = cursor
