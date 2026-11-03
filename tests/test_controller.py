@@ -1,3 +1,5 @@
+"""Test alur giliran: move, place, undo, giliran AI, dan akhir game."""
+
 import unittest
 
 import rules
