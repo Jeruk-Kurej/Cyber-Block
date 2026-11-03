@@ -18,6 +18,7 @@ class Command:
     """Satu perintah: intent plus nilai (tile atau nomor level)."""
 
     def __init__(self, intent, value=None):
+        """Simpan jenis perintah dan nilainya."""
         self.intent = intent
         self.value = value
 
