@@ -58,6 +58,30 @@ def format_action(action):
     return f"gerak {format_tile(move)}, place {format_tile(place)}"
 
 
+def board_text(state):
+    """Papan sebagai teks: H = Human, A = AI, # = tembok, . = kosong."""
+    lines = []
+    for row in range(BOARD_SIZE):
+        line = ""
+        for col in range(BOARD_SIZE):
+            tile = (row, col)
+            if tile == state[HUMAN]:
+                line += "H "
+            elif tile == state[AI]:
+                line += "A "
+            elif tile in state["walls"]:
+                line += "# "
+            else:
+                line += ". "
+        lines.append(line.rstrip())
+    return "\n".join(lines)
+
+
+def print_board(state):
+    """Cetak papan ke terminal, untuk debug."""
+    print(board_text(state))
+
+
 # ---------------------------------------------------------------- state
 
 def initial_state():
