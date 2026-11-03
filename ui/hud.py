@@ -5,10 +5,9 @@ import math
 import pygame
 
 import rules
-from game.controller import GameController, Phase
+from game.controller import Phase
 from ui import pixel_font, theme
 from ui.effects import blink, pulse
-from ui.sprites import Sprites
 from ui.text import draw_pixel_text, draw_text
 
 PHASE_TEXT = {
@@ -34,31 +33,34 @@ HELP_TEXT = {
 
 
 class Hud:
-    def __init__(self, sprites: Sprites):
+    def __init__(self, sprites):
         self.sprites = sprites
         self.panel = pygame.Rect(theme.PANEL_RECT)
         self.left = self.panel.x + theme.PANEL_PAD
         self.right = self.panel.right - theme.PANEL_PAD
 
     # --- Gambar ---
-    def draw(self, surface: pygame.Surface, game: GameController, hover, t: float) -> None:
-        self._draw_header(surface, game)
-        self._draw_banner(surface, game, t)
+    def draw(self, surface, game, hover, t):
+        """Gambar header, banner, dan panel info di kanan."""
+        self.draw_header(surface, game)
+        self.draw_banner(surface, game, t)
         pygame.draw.rect(surface, theme.PANEL_BG, self.panel)
         pygame.draw.rect(surface, theme.PANEL_EDGE, self.panel, 2)
         y = self.panel.y + theme.PANEL_PAD
-        y = self._draw_clock(surface, game, y, t)
-        y = self._draw_mobility(surface, game, hover, y + 26, t)
-        y = self._draw_turn_info(surface, game, y + 18)
-        self._draw_help(surface, game, y + 22)
+        y = self.draw_clock(surface, game, y, t)
+        y = self.draw_mobility(surface, game, hover, y + 26, t)
+        y = self.draw_turn_info(surface, game, y + 18)
+        self.draw_help(surface, game, y + 22)
         draw_text(surface, "Tab: lihat cara AI berpikir", "small", theme.TEXT_DIM, (self.left, self.panel.bottom - 34))
 
-    def _draw_header(self, surface, game: GameController) -> None:
+    def draw_header(self, surface, game):
+        """Logo dan nama level."""
         draw_pixel_text(surface, "CYBER-BLOCK", theme.PIXEL_TEXT_SCALE["logo"], theme.WALL, theme.HEADER_POS, "topleft")
         label = f"LEVEL {game.level['name'].upper()}"
         draw_text(surface, label, "title", theme.TEXT, (self.right, theme.HEADER_POS[1] + 2), anchor="topright")
 
-    def _draw_banner(self, surface, game: GameController, t: float) -> None:
+    def draw_banner(self, surface, game, t):
+        """Banner fase giliran di atas papan."""
         title, hint, color = PHASE_TEXT[game.phase]
         rect = pygame.Rect(theme.BANNER_RECT)
         tint = pygame.Surface(rect.size, pygame.SRCALPHA)
@@ -74,7 +76,8 @@ class Hud:
                 lit = int(t * 6) % 3 == i
                 pygame.draw.rect(surface, color if lit else theme.AI_DARK, (rect.right - 70 + i * 18, rect.centery - 6, 12, 12))
 
-    def _draw_clock(self, surface, game: GameController, y: int, t: float) -> int:
+    def draw_clock(self, surface, game, y, t):
+        """Chess clock Human. Mengembalikan y berikutnya."""
         clock = game.clock
         urgent = clock.urgent() and game.phase != Phase.GAME_OVER
         color = theme.URGENT if urgent else theme.HUMAN_LIGHT
@@ -97,7 +100,8 @@ class Hud:
         pygame.draw.rect(surface, color, (bar.x, bar.y, int(bar.width * clock.fraction()), bar.height))
         return bar.bottom
 
-    def _draw_mobility(self, surface, game: GameController, hover, y: int, t: float) -> int:
+    def draw_mobility(self, surface, game, hover, y, t):
+        """Bar langkah tersisa, plus pratinjau saat hover."""
         draw_text(surface, "LANGKAH TERSISA", "small", theme.TEXT_DIM, (self.left, y))
         now = game.mobility()
         after = game.preview(hover) if hover is not None else now
@@ -120,12 +124,13 @@ class Hud:
             label = str(value) if preview == value else f"{value}→{preview}"
             draw_text(surface, label, "title", theme.WHITE if preview != value else color, (self.right, y + 16), anchor="midright")
             y += 42
-        warning = self._mobility_warning(game, now)
+        warning = self.mobility_warning(game, now)
         if warning:
             draw_text(surface, warning[0], "body", warning[1], (self.left, y))
         return y + 24
 
-    def _mobility_warning(self, game: GameController, now):
+    def mobility_warning(self, game, now):
+        """Pesan peringatan kalau ada yang hampir terkurung."""
         if game.phase == Phase.GAME_OVER:
             return None
         if now[rules.HUMAN] <= theme.DANGER_MOBILITY:
@@ -134,7 +139,8 @@ class Hud:
             return "AI hampir terkurung, serang!", theme.WALL
         return None
 
-    def _draw_turn_info(self, surface, game: GameController, y: int) -> int:
+    def draw_turn_info(self, surface, game, y):
+        """Jumlah giliran bertahan dan aksi terakhir AI."""
         draw_text(surface, "GILIRAN BERTAHAN", "small", theme.TEXT_DIM, (self.left, y))
         draw_text(surface, str(game.turns_survived), "title", theme.TEXT, (self.right, y - 3), anchor="topright")
         y += 30
@@ -143,7 +149,8 @@ class Hud:
         draw_text(surface, rules.format_action(action) if action else "belum ada", "body", theme.AI if action else theme.TEXT_DIM, (self.left, y + 22))
         return y + 46
 
-    def _draw_help(self, surface, game: GameController, y: int) -> None:
+    def draw_help(self, surface, game, y):
+        """Petunjuk singkat sesuai fase."""
         for line, color in HELP_TEXT[game.phase]:
             draw_text(surface, line, "small", color, (self.left, y))
             y += 22
